@@ -1,24 +1,41 @@
-import logo from './logo.svg';
-import './App.css';
-
+import { useState, useEffect} from "react";
+import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
+import ChatPage from "./views/ChatPage/ChatPage";
+import LoginPage from "./views/LoginPage/LoginPage";
+import Cookies from 'js-cookie'
 function App() {
+  const ENDPOINT = 'http://anochatserver.herokuapp.com'
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      
+      <div className="App">
+
+        <Switch>
+          <Route path='/register'>
+            <LoginPage
+            key={Math.random()}
+            isLogin = '0'
+            ENDPOINT={ENDPOINT}
+            />
+          </Route>
+          <Route path='/login'>
+            <LoginPage
+              key={Math.random()}
+              isLogin = '1'
+              ENDPOINT={ENDPOINT}
+            />
+          </Route>
+          
+          <Route path='/home'>
+            <ChatPage ENDPOINT={ENDPOINT}/>
+          </Route>
+          <Route exact path='/'>
+            {Cookies.get('access_token') ? <ChatPage ENDPOINT={ENDPOINT}/> : <Redirect to="/login" />}
+          </Route>
+        </Switch>
+      </div>
+    </Router>
   );
 }
 
