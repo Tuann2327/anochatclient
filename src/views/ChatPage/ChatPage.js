@@ -261,7 +261,7 @@ const ChatPage = (props)=>{
         <main>
             
             <input onChange={onAvtSubmit} type='file' id='file' ref={inputAvt} style={{display: 'none'}}/>
-            {/* <VideoCallWindow startVideo={onStartVideo} streamList={streamList}/> */}
+            <VideoCallWindow startVideo={onStartVideo} streamList={streamList}/>
             <ChatWindow addEmoji={addEmoji} ENDPOINT={props.ENDPOINT} roomName={room.name} onTest = {onSendChat} AllMsg={allMsg} user={userdata} inputHandle = {chatInputHandle} chatInput = {chatInput}/>
             <InfoWindow 
                 ENDPOINT={props.ENDPOINT} 
