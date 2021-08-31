@@ -4,7 +4,7 @@ import ChatPage from "./views/ChatPage/ChatPage";
 import LoginPage from "./views/LoginPage/LoginPage";
 import Cookies from 'js-cookie'
 function App() {
-  const ENDPOINT = 'http://anochatserver.herokuapp.com'
+  const ENDPOINT = 'https://anochatserver.herokuapp.com'
 
   return (
     <Router>
