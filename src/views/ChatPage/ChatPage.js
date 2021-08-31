@@ -201,8 +201,8 @@ const ChatPage = (props)=>{
             setStreamList(tempList)
             
             myPeer.current = new Peer(undefined, {
-                host: 'localhost',
-                port: '8080',
+                host: 'anochatserver.herokuapp.com',
+                port: '443',
                 path: '/peerjs'
             })
             myPeer.current.on('open',id => {
