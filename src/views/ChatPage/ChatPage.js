@@ -223,8 +223,8 @@ const ChatPage = (props)=>{
             let isOnChat = true;
     
             myPeer.current = new Peer(undefined, {
-                host: 'localhost'||'anochatserver.herokuapp.com',
-                port: '8080'||'443',
+                host: 'anochatserver.herokuapp.com',
+                port: '443',
                 path: '/peerjs'
             })
     
