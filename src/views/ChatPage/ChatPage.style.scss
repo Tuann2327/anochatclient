@@ -138,7 +138,7 @@ button:hover{
             position: relative;
             background: transparent;
             border: none;
-            border-radius: 10px;
+            border-radius: 5px;
             height: 30px;
             aspect-ratio: 1/1;
             .emoji-modal{
@@ -153,10 +153,15 @@ button:hover{
             }
 
             .material-icons{
-                font-size: 28px;
+                font-size: 24px;
                 text-align: center;
                 vertical-align: middle;
             }
+            
+            &-active{
+                @extend .chatbtn;
+                background-color: rgb(226, 255, 209);
+            }   
             
             &:hover{
                 background-color: rgb(241, 241, 241);
@@ -194,11 +199,13 @@ button:hover{
     align-items: flex-end;
 }
 
+//chat message
+
 .avt-wrapper{
     animation: avtAppear 0.35s ease;
     position: relative;
-    width: 40px;
-    height: 40px;
+    width: 33px;
+    height: 33px;
     margin-right: 5px;
     img{
         object-fit: cover;
@@ -210,16 +217,18 @@ button:hover{
     }
 }
 
+
 .text-box{
     animation: announceAppear 0.5s ease;
     position: relative;
     box-shadow: 0px 2px 5px 2px rgba(255, 167, 167, 0.015);
-    padding: 8px 16px;
+    padding: 6px 10px 8px;
     width: fit-content;
     max-width: 75%;
     border-radius: 18px;
     margin-top: 25px;
     .chat-name{
+        color: rgb(31, 31, 31);
         top: -25px;
         position: absolute;
         font-weight: 500;
@@ -232,22 +241,29 @@ button:hover{
     }
 
     
-    &-annouce{
+    &-announce{
         @extend .text-box;
-        color: rgba(0, 0, 0, 0.452);
+        color: rgba(0, 0, 0, 0.5);
         margin: 10px auto 0px;
         padding: 2px 20px;
         font-size: 0.9rem;
+        text-align: center;
         .name{
             font-weight: 500;
         }
-        .status{
-            display: inline-block;
-            background-color: chartreuse;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 5px;
+
+        &-avtgreenjoin{
+            @extend .text-box-announce;
+            color: rgba(97, 196, 73, 0.8)
+        }
+        &-avtredleft{
+            @extend .text-box-announce;
+            color: rgba(253, 84, 32, 0.8)
+        }
+        
+        &-welcome{
+            @extend .text-box-announce;
+            color: rgba(32, 165, 253, 0.8)
         }
     }
 }
@@ -258,14 +274,13 @@ button:hover{
 }
 
 $text-same-margin: 2px;
-$text-same-border: 3px;
+$text-same-border: 5px;
 
 .user-chat{
     animation: chatAppear 0.65s ease;
-    $color: rgb(221, 221, 221);
     margin-left: auto;
-    border: 1px solid fade-out($color, 0.15);
-    background: fade-out($color, 0.65);
+    $color: rgb(235, 235, 235);
+    background: $color;
     color: darken($color, 60);
     .chat-name{
         right: 5px;
@@ -286,11 +301,8 @@ $text-same-border: 3px;
 }
 
 .guest-chat{
-    $color: rgb(210, 234, 252);
     margin-right: auto;
-    border: 1px solid fade-out($color, 0.15);
-    background: fade-out($color, 0.65);
-    color: darken($color,60);
+    
     .chat-name{
         left: 5px;
     }
@@ -307,7 +319,21 @@ $text-same-border: 3px;
         @extend .guest-chat;
         border-bottom-left-radius: $text-same-border;
     }
+    //chat color
 }
+
+
+.female{
+    $color: rgb(255, 118, 113);
+    background: $color;
+    color: white;
+}
+.male{
+    $color: rgb(73, 173, 255);
+    background: $color;
+    color: white;
+}
+
 
 // infowindow
 .info-box-container{
@@ -315,10 +341,10 @@ $text-same-border: 3px;
     z-index: 1;
     flex-shrink: 0;
     width: 200px;
+    height: 100%;
     display: flex;
     flex-direction: column;
     gap: $box-gap;
-    height: 100%;
     box-sizing: border-box;
 }
 
@@ -350,6 +376,7 @@ $text-same-border: 3px;
         gap: 5px;
         justify-content: center;
         align-items: center;
+        flex-wrap: nowrap;
         img{
             object-fit: contain;
         }
@@ -368,6 +395,10 @@ $text-same-border: 3px;
         border-radius: 6px;
         padding: 10px;
         box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.11);
+        
+        .material-icons{
+            display: none;
+        }
     }
     padding: 20px 20px;
 }
@@ -414,15 +445,13 @@ $text-same-border: 3px;
 .online-info-title{
     font-size: 0.9rem;
     font-weight: 500;
+    overflow-y: auto;
 }
 .online-list{
     display: flex;
     flex-direction: column;
     margin-top: 20px;
     gap: 5px;
-    overflow-y: auto;
-    height: 100%;
-    
     animation: announceAppear 0.75s ease;
     .online-list-card{
         border-top: 1px solid rgba(128, 128, 128, 0.2);
@@ -452,6 +481,11 @@ $text-same-border: 3px;
         color: rgb(19, 19, 19);
         margin-left: 10px;
     }
+}
+
+.ReactModalPortal{
+    position: relative;
+    z-index: 10;
 }
 
 .gender-modal{
@@ -565,11 +599,12 @@ $text-same-border: 3px;
     box-sizing: border-box;
     .video-list{
         width: 100%;
+        height: 100%;
         background: transparent;
+        flex-direction: column;
         display: flex;
-        justify-content: center;
+        justify-content: space-evenly;
         align-items: center;
-        flex-wrap: wrap;
         gap: 10px;
         
         *{
@@ -577,11 +612,12 @@ $text-same-border: 3px;
             box-shadow: 0px 5px 12px 1px rgba(0, 0, 0, 0.2);
             background: transparent;
             flex-grow: 1;
-            width: 30%;
+            max-width: 100%;
             min-width: 300px;
             aspect-ratio: 4/3;
         }
     }
+    
 }
 
 
@@ -620,5 +656,85 @@ $text-same-border: 3px;
     }
     100% {
         transform: translateY(0px);
+    }
+}
+
+@media (max-width: 760px) {
+    .info-box-container{
+        height: fit-content;
+        left: 50%;
+        transform: translate(-50%,50px);
+        z-index: 2;
+        position: absolute;
+        width: min-content;
+        .user-info-card{
+            width: min-content;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+            padding: 10px;
+            .avt-wrapper{
+                width: 50px;
+                height: 50px;
+            }
+            .user-info{
+                flex-direction: row;
+                margin: 0px;
+                *{
+                    font-size: 0.8rem;
+                }
+            }
+            .find-random{
+                width: 150px;
+            }
+            button{
+                padding: 5px;
+                width: 45px;
+                .material-icons{
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+                .text{
+                    display: none;
+                }
+                font-size: 0.8rem;
+            }
+        }
+    }
+    .online-info-card{
+        display: none;
+    }
+    
+    .emoji-modal{
+        right: 0 !important;
+        transform: translate(0%,-40px)!important;
+    }
+}
+@media (max-width: 500px) {
+    .info-box-container{
+        .user-info-card{
+            flex-wrap: wrap;
+            width: 300px;
+            justify-content: center;
+            .avt-wrapper{
+                width: 45px;
+                height: 45px;
+            }
+            .user-info{
+                width: 100%;
+                justify-content: center;
+                .info-wrapper{
+                    width: fit-content;
+                    *{
+                        margin-left: 5px;
+                        display: inline-block;
+                        font-size: 1rem;
+                    }
+                }
+            }
+        }
+    }
+    .online-info-card{
+        display: none;
     }
 }

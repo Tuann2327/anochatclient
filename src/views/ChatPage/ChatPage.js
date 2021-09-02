@@ -42,8 +42,8 @@ const ChatPage = (props)=>{
 
     //video-chat
     const [isVideoChat,setVideoChat] = useState(false)
-    const [streamList, setStreamList] = useState([])
-    const [newVideo,setNewVideo] = useState()
+    const [myStream,setMyStream] = useState()
+    const [yourStream,setYourStream] = useState()
 
     //video-chat
     const history = useHistory();
@@ -73,6 +73,8 @@ const ChatPage = (props)=>{
                 socket.current.on("onBackChat", (data) => {
                     setNewMgs(data)
                 })
+
+                //matchmaking -
                 socket.current.on("foundMatching",(data)=>{
                     console.log(data)
                     socket.current.emit('joinRoomID',{id:data.roomid,user:data.user})
@@ -81,12 +83,16 @@ const ChatPage = (props)=>{
                     setAllMsg([])
                 })
 
+                
+                
+
                 if(isMatch.data.accountInfo.gender==='none') setIsOpen(true);
             }
         };
         getData()
         return () => {
             socket.current && socket.current.disconnect();
+            myPeer.current && myPeer.current.destroy()
         }
     }, [])
     
@@ -94,8 +100,8 @@ const ChatPage = (props)=>{
         if(newMsg.user){
             const currentmsgs = [...allMsg,newMsg]
             setAllMsg(currentmsgs)
-            if(newMsg.onlineUser) setOnlineList(newMsg.onlineUser)
         }
+        if(newMsg.onlineUser) setOnlineList(newMsg.onlineUser)
     },[newMsg])
     
     
@@ -126,7 +132,7 @@ const ChatPage = (props)=>{
             const formData = new FormData();
             formData.append("file", imgfile,userdata.id+".jpg")
             try{
-                const result = await axios.post(props.ENDPOINT+'/api/accounts/setavt/'+userdata.username, formData, {
+                await axios.post(props.ENDPOINT+'/api/accounts/setavt/'+userdata.username, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
@@ -143,13 +149,16 @@ const ChatPage = (props)=>{
     //Matching
     const onMatching=()=>{
         if(room.id) {
+            socket.current.emit('closeCall',room.id)
             socket.current.emit('leaveRoomID',room.id)
             setAllMsg([])
             setRoom({})
             return
         }
         if(!isMatching) socket.current.emit('joinMatching',userdata)
-        else socket.current.emit('leaveMatching',userdata)
+        else {
+            socket.current.emit('leaveMatching',userdata)
+        }
         setMatching(!isMatching)
     }
 
@@ -189,70 +198,115 @@ const ChatPage = (props)=>{
 
     //video-chat - start
 
+    const StopMyStream = (stream)=>{
+        setYourStream(null)
+        setVideoChat(false)
+    }
+
     const onStartVideo = async () =>{
-        if(isVideoChat) return
-        navigator.mediaDevices.getUserMedia({
+        if(isVideoChat) {
+            socket.current.emit('closeCall',room.id)
+            return
+        }
+        if(myStream){
+            setVideoChat(true)
+            socket.current.emit("joinVideoChat",{id:myPeer.current.id,roomid:room.id})
+            return
+        } 
+        
+        await navigator.mediaDevices.getUserMedia({
             video: true,
             audio: true
         }).then(stream => {
-            setVideoChat(true)
-            const tempList = [...streamList]
-            tempList.push(stream)
-            setStreamList(tempList)
-            
+            setMyStream(stream)
+
+            let isOnChat = true;
+    
             myPeer.current = new Peer(undefined, {
-                host: 'anochatserver.herokuapp.com',
-                port: '443',
+                host: 'localhost'||'anochatserver.herokuapp.com',
+                port: '8080'||'443',
                 path: '/peerjs'
             })
+    
             myPeer.current.on('open',id => {
                 console.log(id)
-                socket.current.emit("joinVideoChat",id)
+                console.log(myPeer.current.id)
+                socket.current.emit("joinVideoChat",{id:myPeer.current.id,roomid:room.id})
             })
-
+    
             myPeer.current.on('call', call => {
+    
                 console.log('someone is calling you')
+                console.log(isVideoChat)
                 call.answer(stream)
+    
                 call.on('stream', callerStream=>{
-                    setNewVideo(callerStream)
+                    setYourStream(callerStream)
                 })
                 
+                call.on('close',id=>{
+                    StopMyStream()
+                })
+    
+                socket.current.on("closeCall",() => {
+                    call.close();
+                    isOnChat = false;
+                    stream.getTracks()[0].stop()
+                    stream.getTracks()[1].stop()
+                })
             })
+    
+            socket.current.on("joinVideoChat",async (data) => {
+                if(data.id === myPeer.current.id){
+                    if(true){
+                        await navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(newstream=>{
+                            stream.addTrack(newstream.getTracks()[0]);
+                            stream.addTrack(newstream.getTracks()[1]);
+                        });
+                    }
+                    console.log(stream.getTracks()[1])
+                    isOnChat = true;
+                }else if(isOnChat){
+                    
+                    const call = myPeer.current.call(data.id,stream)
 
-            socket.current.on("joinVideoChat",(id) => {
-                console.log(id)
-                console.log(stream)
-                connectToUser(id,stream)
+                    call.on('stream', userStream =>{
+                        console.log('some one is respone to your call')
+                        console.log(userStream.id)
+                        setYourStream(userStream)
+                    })
+                    
+                    call.on('close',id=>{
+                        StopMyStream()
+                    })
+        
+                    socket.current.on("closeCall",() => {
+                        call.close();
+                        isOnChat = false;
+                        stream.getTracks()[0].stop()
+                        stream.getTracks()[1].stop()
+                    })
+                }
             })
-
-            socket.current.on("videoClose",(id) => {
-                streamList.slice(streamList.findIndex(stream => stream.id === id.id),1)
-            })
+            // socket.current.on("videoClose",(id) => {
+            //     console.log('huhu someone is closed the stream')
+            //     streamList.slice(streamList.findIndex(stream => stream.id === id.id),1)
+            // })
         }).catch(e=>{
             return
         })
+        
+        
+
+        setVideoChat(true)
+        console.log(myStream)
+        
     }
+
 
     const connectToUser = (id,stream) =>{
-        const call = myPeer.current.call(id,stream)
-        call.on('stream', userStream =>{
-            console.log('some one is respone to your call')
-            console.log(userStream.id)
-            setNewVideo(userStream)
-        })
-        call.on('close',()=>{
-            console.log('someoneclose')
-        })
+        
     }
-
-    
-    useEffect(()=>{
-        if(newVideo){
-            const newList = [...streamList,newVideo]
-            setStreamList(newList)
-        }
-    },[newVideo])
-    
 
     // video chat - end
 
@@ -261,8 +315,19 @@ const ChatPage = (props)=>{
         <main>
             
             <input onChange={onAvtSubmit} type='file' id='file' ref={inputAvt} style={{display: 'none'}}/>
-            <VideoCallWindow startVideo={onStartVideo} streamList={streamList}/>
-            <ChatWindow addEmoji={addEmoji} ENDPOINT={props.ENDPOINT} roomName={room.name} onTest = {onSendChat} AllMsg={allMsg} user={userdata} inputHandle = {chatInputHandle} chatInput = {chatInput}/>
+            {isVideoChat?<VideoCallWindow startVideo={onStartVideo} isVideoChat={isVideoChat} myStream={myStream} yourStream={yourStream}/>:''}
+            <ChatWindow 
+                startVideo={onStartVideo} 
+                addEmoji={addEmoji} 
+                ENDPOINT={props.ENDPOINT}
+                room = {room}
+                roomName={room.name} 
+                onTest = {onSendChat} 
+                AllMsg={allMsg} 
+                user={userdata} 
+                inputHandle = {chatInputHandle} 
+                chatInput = {chatInput}
+            />
             <InfoWindow 
                 ENDPOINT={props.ENDPOINT} 
                 user={userdata} 

@@ -5,19 +5,16 @@ const StreamVideo = (props)=>{
     useEffect(()=>{
         videoRef.current.srcObject = props.stream;
     },[])
-    return <video autoPlay muted playsInline ref={videoRef}/>
+    return <video autoPlay muted={props.isMute} playsInline ref={videoRef}/>
 }
 
 const VideoCallWindow = (props) =>{ 
 
-    const getVideoList = props.streamList.map((stream,index) =>{
-        return <StreamVideo stream={stream} key={index}/>
-    })
-
     return(
         <div onClick={props.startVideo} className='video-box-container'>
             <div className='video-list'>
-                {getVideoList}
+                {props.yourStream?<StreamVideo stream={props.yourStream} isMute={false}/>:''}
+                {props.isVideoChat?<StreamVideo stream={props.myStream} isMute={true}/>:''}
             </div>
         </div>
     )

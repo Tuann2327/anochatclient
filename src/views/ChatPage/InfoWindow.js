@@ -28,13 +28,29 @@ const InfoWindow = (props)=>{
                     <div onClick={props.onavtclick} className='avt-wrapper'>
                         <img src={props.ENDPOINT+`/api/accounts/avt/${props.user.gender}/${props.user.username}`}></img>
                     </div>
-                    <h2 className='username'>{props.user.username}</h2>
-                    <div className='star-point'><span>123.123</span><img className='star' src={starpoint}></img></div>
+                    <div className='info-wrapper'>
+                        <h2 className='username'>{props.user.username}</h2>
+                        <div className='star-point'><span>123.123</span><img className='star' src={starpoint}></img></div>
+                    </div>
                     
                 </div>
-                <button onClick={props.updateinfo} className='info'>Cài Đặt</button>
-                <button onClick={props.onMatching} className='find-random'>{getFindRandomText()} {props.ismatching?<img width='50px' src={loading}/>:''}</button>
-                <button onClick={props.onsignout} className='signout'>Đăng Xuất</button>
+                <button onClick={props.updateinfo} className='info'>
+                    
+                    <span class="material-icons">
+                        settings
+                    </span>
+                    <span className='text'>Cài Đặt</span>
+
+                </button>
+                <button onClick={props.onMatching} className='find-random'>
+                    <span>{getFindRandomText()}</span>{props.ismatching?<img width='50px' src={loading}/>:''}
+                </button>
+                <button onClick={props.onsignout} className='signout'>
+                    <span class="material-icons">
+                        logout
+                    </span>
+                    <span className='text'>Đăng Xuất</span>
+                </button>
             </div>
             <div className='online-info-card'>
                 <h2 className='online-info-title'>ONLINE USER - <span className='number-online'>{props.OnlineList.length}</span></h2>
